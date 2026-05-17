@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block navbar %}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/floorplan_editor.css') }}">
+{% endblock %}
+{% block content %}
+
+<div class="dt-container">
+  <div class="dt-bg-3d" id="floorplanContainer">
+    <div class="dt-grid-overlay"></div>
+    <div class="dt-particles"></div>
+    <div class="dt-bg-loading" id="floorplanLoading">
+      <div class="loading-ring"></div>
+      <span class="loading-text" data-i18n="modelPlaceholder">3D Building Model Loading...</span>
+    </div>
+  </div>
+
+  <div class="dt-control-bar">
+    <a href="/" class="dt-ctrl-btn dt-ctrl-home" title="返回首页">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <button class="dt-ctrl-btn" id="btnBuilding" title="Building">
+      <i class="fas fa-building"></i>
+    </button>
+    <button class="dt-ctrl-btn" id="btnAppliance" title="Appliance">
+      <i class="fas fa-plug"></i>
+    </button>
+    <button class="dt-ctrl-btn" id="btnTime" title="Time Range">
+      <i class="fas fa-clock"></i>
+    </button>
+    <button class="dt-ctrl-btn" id="btnSettings" title="Settings">
+      <i class="fas fa-cog"></i>
+    </button>
+  </div>
+
+  <div class="dt-popup" id="popupBuilding">
+    <div class="dt-popup-header">
+      <span data-i18n="building">Building</span>
+      <button class="dt-popup-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="dt-popup-body">
+      <select id="buildingSelect">
+        <option value="" data-i18n="loading">Loading...</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dt-popup" id="popupAppliance">
+    <div class="dt-popup-header">
+      <span data-i18n="appliance">Appliance</span>
+      <button class="dt-popup-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="dt-popup-body">
+      <select id="applianceSelect">
+        <option value="" data-i18n="allAppliances">All Appliances</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dt-popup" id="popupTime">
+    <div class="dt-popup-header">
+      <span data-i18n="timeRange">Time Range</span>
+      <button class="dt-popup-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="dt-popup-body">
+      <div class="dt-btn-group" id="timeRangeGroup">
+        <button class="dt-btn" data-days="1">24h</button>
+        <button class="dt-btn active" data-days="7">7d</button>
+        <button class="dt-btn" data-days="30">30d</button>
+        <button class="dt-btn" data-days="365">1y</button>
+      </div>
+      <div class="dt-btn-group" id="intervalGroup">
+        <button class="dt-btn" data-interval="15min">15m</button>
+        <button class="dt-btn active" data-interval="hour">1h</button>
+        <button class="dt-btn" data-interval="day">1d</button>
+        <button class="dt-btn" data-interval="week">1w</button>
+      </div>
+      <div class="dt-date-row">
+        <input type="date" id="startDateInput">
+        <span>~</span>
+        <input type="date" id="endDateInput">
+        <button class="dt-btn dt-btn-apply" id="dateApplyBtn" data-i18n="apply">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dt-popup dt-popup-wide" id="popupSettings">
+    <div class="dt-popup-header">
+      <span data-i18n="settings">Settings</span>
+      <button class="dt-popup-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="dt-popup-body">
+      <div class="dt-status-indicator" id="statusIndicator">
+        <span class="dt-status-dot"></span>
+        <span id="statusText" data-i18n="ready">System Ready</span>
+      </div>
+      <div class="fe-preset-section">
+        <label class="fe-preset-label" data-i18n="floorplanPreset">Floor Plan Preset</label>
+        <select id="presetSelect" class="fe-prop-select" style="width:100%;">
+          <option value="default" selected data-i18n="presetDefault">Default (8 Rooms)</option>
+          <option value="小户型公寓" data-i18n="presetSmallApt">Small Apartment</option>
+          <option value="标准三居室" data-i18n="preset3Bed">Standard 3-Bedroom</option>
+          <option value="大平层" data-i18n="presetFlat">Large Flat</option>
+          <option value="联排别墅" data-i18n="presetTownhouse">Townhouse</option>
+          <option value="开放式工作室" data-i18n="presetStudio">Open Studio</option>
+        </select>
+      </div>
+      <button class="dt-btn dt-btn-apply" id="btnOpenEditor" data-i18n="editLayout">
+        <i class="fas fa-pen-ruler" style="margin-right:6px;"></i>Edit Layout
+      </button>
+    </div>
+  </div>
+
+  <div class="dt-left">
+    <div class="dt-panel">
+      <div class="dt-panel-header">
+        <i class="fas fa-list-ul"></i>
+        <span data-i18n="applianceStatus">Appliance Status</span>
+      </div>
+      <div class="dt-panel-body">
+        <table class="dt-table">
+          <thead>
+            <tr>
+              <th class="dt-th-rank">#</th>
+              <th data-i18n="appliance">Appliance</th>
+              <th data-i18n="type">Type</th>
+              <th class="dt-th-count" data-i18n="activationCount">Activations</th>
+            </tr>
+          </thead>
+          <tbody id="statusBody">
+            <tr><td colspan="4" class="dt-table-empty" data-i18n="loading">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dt-panel">
+      <div class="dt-panel-header">
+        <i class="fas fa-th-large"></i>
+        <span data-i18n="statsOverview">Statistics Overview</span>
+      </div>
+      <div class="dt-panel-body">
+        <div class="dt-stats-grid">
+          <div class="dt-stat-item">
+            <div class="dt-stat-value" id="statRecords">--</div>
+            <div class="dt-stat-label" data-i18n="totalRecords">Total Records</div>
+          </div>
+          <div class="dt-stat-item">
+            <div class="dt-stat-value purple" id="statAvgPower">--</div>
+            <div class="dt-stat-label" data-i18n="avgPower">Avg Power</div>
+          </div>
+          <div class="dt-stat-item">
+            <div class="dt-stat-value warm" id="statMaxPower">--</div>
+            <div class="dt-stat-label" data-i18n="maxPower">Max Power</div>
+          </div>
+          <div class="dt-stat-item">
+            <div class="dt-stat-value blue" id="statMinPower">--</div>
+            <div class="dt-stat-label" data-i18n="minPower">Min Power</div>
+          </div>
+          <div class="dt-stat-item">
+            <div class="dt-stat-value energy" id="statEnergy">--</div>
+            <div class="dt-stat-label" data-i18n="totalEnergy">Total Energy</div>
+          </div>
+          <div class="dt-stat-item">
+            <div class="dt-stat-value" id="statRecords2">--</div>
+            <div class="dt-stat-label" data-i18n="totalDevices">Devices</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dt-right">
+    <div class="dt-panel">
+      <div class="dt-panel-header">
+        <i class="fas fa-chart-line"></i>
+        <span data-i18n="trendTitle">Power Consumption Trend</span>
+        <div class="dt-panel-actions">
+          <button class="dt-btn dt-btn-sm" data-interval="hour">1h</button>
+          <button class="dt-btn dt-btn-sm active" data-interval="day">1d</button>
+          <button class="dt-btn dt-btn-sm" data-interval="week">1w</button>
+        </div>
+      </div>
+      <div class="dt-panel-body">
+        <div id="powerChart" class="dt-chart"></div>
+      </div>
+    </div>
+
+    <div class="dt-panel">
+      <div class="dt-panel-header">
+        <i class="fas fa-chart-bar"></i>
+        <span data-i18n="applianceDistTitle">Appliance Distribution</span>
+      </div>
+      <div class="dt-panel-body">
+        <div id="chartLeft" class="dt-chart"></div>
+      </div>
+    </div>
+
+    <div class="dt-panel">
+      <div class="dt-panel-header">
+        <i class="fas fa-chart-pie"></i>
+        <span data-i18n="typeDistTitle">Type Distribution</span>
+      </div>
+      <div class="dt-panel-body">
+        <div id="chartRight" class="dt-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dt-room-panel" id="roomDetailPanel">
+    <div class="dt-room-title" id="roomDetailTitle">--</div>
+    <div class="dt-room-content" id="roomDetailContent">
+      <div class="dt-room-empty" data-i18n="clickRoomTip">Select a room to view details</div>
+    </div>
+  </div>
+
+  <div class="fe-overlay" id="floorplanEditor">
+    <div class="fe-panel">
+      <div class="fe-toolbar">
+        <div class="fe-toolbar-left">
+          <span class="fe-title" data-i18n="editorTitle">Floor Plan Editor</span>
+        </div>
+        <div class="fe-toolbar-right">
+          <div class="fe-type-dropdown">
+            <button class="fe-btn fe-btn-add" title="Add Room">
+              <i class="fas fa-plus"></i>
+              <span data-i18n="addRoom">Add Room</span>
+            </button>
+            <div class="fe-type-list">
+              <button class="fe-type-option" data-type="lounge"><span class="fe-type-dot" style="background:#818CF8;"></span><span data-i18n="roomLounge">Lounge</span></button>
+              <button class="fe-type-option" data-type="kitchen"><span class="fe-type-dot" style="background:#22D3EE;"></span><span data-i18n="roomKitchen">Kitchen</span></button>
+              <button class="fe-type-option" data-type="bedroom"><span class="fe-type-dot" style="background:#A78BFA;"></span><span data-i18n="roomBedroom1">Bedroom</span></button>
+              <button class="fe-type-option" data-type="bathroom"><span class="fe-type-dot" style="background:#2DD4BF;"></span><span data-i18n="roomBathroom">Bathroom</span></button>
+              <button class="fe-type-option" data-type="study"><span class="fe-type-dot" style="background:#6366F1;"></span><span data-i18n="roomStudy">Study</span></button>
+              <button class="fe-type-option" data-type="hall"><span class="fe-type-dot" style="background:#38BDF8;"></span><span data-i18n="roomHall">Hall</span></button>
+              <button class="fe-type-option" data-type="utility"><span class="fe-type-dot" style="background:#A78BFA;"></span><span data-i18n="roomUtility">Utility</span></button>
+              <button class="fe-type-option" data-type="dining"><span class="fe-type-dot" style="background:#F59E0B;"></span><span data-i18n="roomDining">Dining</span></button>
+              <button class="fe-type-option" data-type="garage"><span class="fe-type-dot" style="background:#6B7280;"></span><span data-i18n="roomGarage">Garage</span></button>
+              <button class="fe-type-option" data-type="custom"><span class="fe-type-dot" style="background:#38BDF8;"></span><span data-i18n="roomCustom">Custom</span></button>
+            </div>
+          </div>
+          <button class="fe-btn fe-btn-delete" title="Delete">
+            <i class="fas fa-trash"></i>
+            <span data-i18n="deleteRoom">Delete</span>
+          </button>
+          <button class="fe-btn fe-btn-save" title="Save">
+            <i class="fas fa-save"></i>
+            <span data-i18n="saveLayout">Save</span>
+          </button>
+          <button class="fe-btn fe-btn-reset" title="Reset">
+            <i class="fas fa-undo"></i>
+            <span data-i18n="resetLayout">Reset</span>
+          </button>
+          <button class="fe-btn fe-btn-close-editor" title="Close">
+            <i class="fas fa-times"></i>
+            <span data-i18n="closeEditor">Close</span>
+          </button>
+        </div>
+      </div>
+      <div class="fe-workspace">
+        <div class="fe-canvas-wrap">
+          <canvas class="fe-canvas"></canvas>
+        </div>
+        <div class="fe-props">
+          <div class="fe-props-header" data-i18n="roomTypeLabel">Room Properties</div>
+          <div class="fe-props-body">
+            <div class="fe-props-empty" data-i18n="noRoomSelected">Click a room to edit</div>
+          </div>
+        </div>
+      </div>
+      <div class="fe-hint">
+        <span><kbd>Drag</kbd> 移动 &nbsp; <kbd>Corners</kbd> 缩放 &nbsp; <kbd>Del</kbd> 删除 &nbsp; <kbd>Esc</kbd> 关闭</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/three.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/CSS2DRenderer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/floorplan_data.js') }}"></script>
+<script src="{{ url_for('static', filename='js/floorplan_storage.js') }}"></script>
+<script src="{{ url_for('static', filename='js/floorplan3d.js') }}"></script>
+<script src="{{ url_for('static', filename='js/floorplan_editor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

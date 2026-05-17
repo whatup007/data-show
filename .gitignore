@@ -23,6 +23,7 @@ Thumbs.db
 logs/
 *.pid
 *.log
+*.tmp
 
 # Instance folder
 instance/
@@ -33,3 +34,11 @@ uploads/
 # Database
 *.db
 *.sqlite
+
+# Large dataset files (stored outside project root)
+data/
+
+# Temporary notes and logs
+提示词*.txt
+日志*.txt
+*.tmp.txt

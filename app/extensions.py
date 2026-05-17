@@ -22,5 +22,8 @@ def init_extensions(app):
 
     @login_manager.user_loader
     def load_user(user_id):
-        from app.models import User
-        return User.query.get(int(user_id))
+        try:
+            from app.models import User
+            return User.query.get(int(user_id))
+        except (ImportError, AttributeError):
+            return None
