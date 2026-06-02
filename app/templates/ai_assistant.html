@@ -1,0 +1,111 @@
+﻿{% extends "base.html" %}
+
+{% block title %}AI 鏅鸿兘鍔╂墜{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-robot"></i> AI 鏅鸿兘鍔╂墜 (ESP32-S3 鑱斿姩)</h5>
+                    <span id="status-badge" class="badge bg-secondary">鏈繛鎺?/span>
+                </div>
+                <div class="card-body">
+                    <div id="chat-box" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                        <!-- 娑堟伅鏄剧ず鍖哄煙 -->
+                        <div class="text-center text-muted small">娆㈣繋浣跨敤 AI 鍔╂墜</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="user-input" class="form-control" placeholder="杈撳叆闂...">
+                        <button class="btn btn-primary" id="send-btn">鍙戦€?/button>
+                    </div>
+                    
+                    <div class="mt-3 text-center">
+                        <button class="btn btn-outline-danger" id="record-btn">
+                            <i class="fas fa-microphone"></i> 鎸変綇璇磋瘽 (娴忚鍣ㄦ祴璇?
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer small text-muted">
+                    鍚庣 WebSocket 鍦板潃: <code id="ws-url"></code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; }
+    .user-message { background-color: #007bff; color: white; align-self: flex-end; margin-left: auto; }
+    .ai-message { background-color: #e9ecef; color: #333; align-self: flex-start; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 绉婚櫎 /ai 鍛藉悕绌洪棿锛屽己鍒朵紭鍏堜娇鐢?websocket
+        const socket = io({
+            transports: ['websocket', 'polling']
+        });
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const statusBadge = document.getElementById('status-badge');
+        const wsUrlDisplay = document.getElementById('ws-url');
+
+        // 鏄剧ず褰撳墠 WS 鍦板潃渚?ESP32 鍙傝€?        wsUrlDisplay.innerText = `ws://${window.location.host}/socket.io/?EIO=4&transport=websocket`;
+
+        socket.on('connect', () => {
+            statusBadge.innerText = '宸茶繛鎺?;
+            statusBadge.className = 'badge bg-success';
+        });
+
+        socket.on('disconnect', () => {
+            statusBadge.innerText = '鏈繛鎺?;
+            statusBadge.className = 'badge bg-secondary';
+        });
+
+        // 澶勭悊鏂囨湰鍥炲
+        socket.on('text_response', (data) => {
+            appendMessage('AI', data.response, 'ai-message');
+        });
+
+        // 鍙戦€佹枃鏈秷鎭?        function sendMessage() {
+            const text = userInput.value.trim();
+            if (text) {
+                appendMessage('浣?, text, 'user-message');
+                socket.emit('text_query', { query: text });
+                userInput.value = '';
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function appendMessage(sender, text, className) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${className}`;
+            msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 绠€鍗曠殑褰曢煶婕旂ず锛堝疄闄?ESP32 浼氱洿鎺ュ彂浜岃繘鍒讹級
+        // 杩欓噷浠呬綔涓哄崰浣?        const recordBtn = document.getElementById('record-btn');
+        recordBtn.addEventListener('mousedown', () => {
+            recordBtn.className = 'btn btn-danger';
+            console.log('寮€濮嬪綍闊?..');
+        });
+        recordBtn.addEventListener('mouseup', () => {
+            recordBtn.className = 'btn btn-outline-danger';
+            console.log('鍋滄褰曢煶骞跺彂閫?..');
+        });
+    });
+</script>
+{% endblock %}

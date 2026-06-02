@@ -21,3 +21,10 @@ Flask-WTF>=1.2
 
 # 跨域支持
 Flask-CORS>=4.0
+
+# 实时通信
+Flask-SocketIO>=5.3
+
+# AI 对话
+openai>=1.0
+scipy>=1.11
