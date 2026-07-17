@@ -1,4 +1,4 @@
-﻿import numpy as np
+import numpy as np
 
 
 def compute_rms(audio_int16):
@@ -27,39 +27,42 @@ def compute_speech_ratio(audio_int16, sample_rate=16000):
 
 def detect_speech(audio_int16, sample_rate=16000):
     """
-    鍩轰簬 RMS 鑳介噺鍜岃闊虫瘮渚嬬殑缁煎悎 VAD銆?    杩斿洖 (has_speech: bool, detail: str)
+    基于 RMS 能量和语音比例的综合 VAD。
+    返回 (has_speech: bool, detail: str)
     """
     rms = compute_rms(audio_int16)
     speech_ratio = compute_speech_ratio(audio_int16, sample_rate)
 
     if rms < 0.003:
-        return False, f"闈欓煶 (RMS={rms:.5f})"
+        return False, f"静音 (RMS={rms:.5f})"
 
     if rms < 0.006 and speech_ratio < 0.15:
-        return False, f"鐜鍣０ (RMS={rms:.5f}, speech_ratio={speech_ratio:.2f})"
+        return False, f"环境噪声 (RMS={rms:.5f}, speech_ratio={speech_ratio:.2f})"
 
     if rms > 0.30:
-        return False, f"鍓婃尝/鐖嗚鍣０ (RMS={rms:.3f}, speech_ratio={speech_ratio:.2f})"
+        return False, f"削波/爆破噪声 (RMS={rms:.3f}, speech_ratio={speech_ratio:.2f})"
 
     if speech_ratio < 0.10 and rms < 0.02:
-        return False, f"鐤戜技闈炰汉澹?(RMS={rms:.5f}, speech_ratio={speech_ratio:.2f})"
+        return False, f"疑似非人声 (RMS={rms:.5f}, speech_ratio={speech_ratio:.2f})"
 
-    return True, f"妫€娴嬪埌璇煶 (RMS={rms:.5f}, speech_ratio={speech_ratio:.2f})"
+    return True, f"检测到语音 (RMS={rms:.5f}, speech_ratio={speech_ratio:.2f})"
 
 
 NOISE_KEYWORDS = [
-    "鍣煎暘", "鐖嗚", "鏉傞煶", "鍣煶", "鍣０", "闈欑數", "骞叉壈",
-    "鏁呴殰绫?, "鏁版嵁鍑洪敊", "淇″彿鍙楀共鎵?, "鐢靛瓙鏁呴殰",
-    "娌℃湁鏈夋晥浜哄０", "娌℃湁浠讳綍浜哄０", "娌℃湁鍑虹幇浜哄０",
-    "鏃犱汉澹?, "鏃犳湁鏁堣闊?, "鍚笉娓?,
-    "鏃犲０", "闈欓煶", "娌℃湁澹伴煶",
+    "噪音", "爆破", "杂音", "噪声", "静电", "干扰",
+    "故障", "数据错误", "信号受干扰", "电子故障",
+    "没有有效人声", "没有任何人声", "没有出现人声",
+    "无人声", "无有效语音", "听不清",
+    "无声", "静音", "没有声音",
     "no valid speech", "no human voice",
 ]
 
 
 def is_noise_transcript(text):
     """
-    妫€娴?AI 杩斿洖鐨勬枃鏈槸鍚︿负"鍣０鎻忚堪"鑰岄潪鐪熷疄瀵硅瘽鍐呭銆?    杩斿洖 True 琛ㄧず搴旇涓㈠純杩欐潯鍥炲銆?    """
+    检查 AI 返回的文本是否为"噪声描述"而非真实对话内容。
+    返回 True 表示应该丢弃这条回复。
+    """
     if not text:
         return True
 

@@ -19,3 +19,9 @@ def about():
 def dashboard():
     current_app.logger.info("访问数据看板")
     return render_template("dashboard.html")
+
+
+@main_bp.route("/timer")
+def timer():
+    current_app.logger.info("访问数字电子钟")
+    return render_template("timer.html")

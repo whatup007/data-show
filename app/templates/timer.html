@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}ESP32 数字电子钟 - AURA{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/timer.css') }}">
+{% endblock %}
+{% block content %}
+<div class="timer-page">
+  <header class="timer-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">基于ESP32-S3的多功能数字电子钟</h1>
+      <p class="hero-sub">NTP网络对时 | 多时区显示 | 音乐闹钟 | 温湿度监测</p>
+    </div>
+    <div class="timer-hero-decoration">
+      <div class="circuit-line"></div>
+      <div class="circuit-line"></div>
+      <div class="circuit-line"></div>
+    </div>
+  </header>
+
+  <div class="timer-container">
+
+    <section class="clock-showcase">
+      <h2 class="section-title">时钟功能展示</h2>
+      <div class="clock-display">
+        <div class="lcd-frame">
+          <div class="lcd-screen">
+            <div class="lcd-line lcd-line-1">
+              <span class="lcd-label">本地时间</span>
+              <span class="lcd-value" id="local-time">00:00:00</span>
+            </div>
+            <div class="lcd-line lcd-line-2">
+              <span class="lcd-label">日期</span>
+              <span class="lcd-value" id="local-date">2026-01-01</span>
+            </div>
+            <div class="lcd-line lcd-line-3">
+              <span class="lcd-label">星期</span>
+              <span class="lcd-value" id="local-weekday">星期一</span>
+            </div>
+            <div class="lcd-line lcd-line-4">
+              <span class="lcd-label">温度</span>
+              <span class="lcd-value" id="temperature">25°C</span>
+              <span class="lcd-label">湿度</span>
+              <span class="lcd-value" id="humidity">60%</span>
+            </div>
+          </div>
+        </div>
+        <div class="timezone-panel">
+          <h3>世界时区</h3>
+          <div class="timezone-grid">
+            <div class="timezone-item active" data-tz="Asia/Shanghai">
+              <span class="tz-name">北京时间</span>
+              <span class="tz-time" id="tz-beijing">00:00:00</span>
+            </div>
+            <div class="timezone-item" data-tz="America/New_York">
+              <span class="tz-name">纽约时间</span>
+              <span class="tz-time" id="tz-newyork">00:00:00</span>
+            </div>
+            <div class="timezone-item" data-tz="Europe/London">
+              <span class="tz-name">伦敦时间</span>
+              <span class="tz-time" id="tz-london">00:00:00</span>
+            </div>
+            <div class="timezone-item" data-tz="Asia/Tokyo">
+              <span class="tz-name">东京时间</span>
+              <span class="tz-time" id="tz-tokyo">00:00:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <h2 class="section-title">核心功能</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">&#9201;</div>
+          <h3>NTP网络对时</h3>
+          <p>ESP32-S3内置WiFi连接NTP服务器，实现高精度时间同步，误差低于±1秒/天</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127758;</div>
+          <h3>多时区显示</h3>
+          <p>支持4个世界时区一键切换，自动处理跨日、跨月、跨年及闰年日期修正</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127925;</div>
+          <h3>音乐闹钟</h3>
+          <p>JQ8900 MP3模块支持自定义曲目、播放时长和音量，支持4组独立闹钟</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127777;&#65039;</div>
+          <h3>温湿度监测</h3>
+          <p>DHT11传感器实时采集环境温湿度数据，LCD屏幕同步显示</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128190;</div>
+          <h3>掉电存储</h3>
+          <p>AT24C512 EEPROM存储用户设置，掉电后自动恢复时区、闹钟等参数</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127918;</div>
+          <h3>按键交互</h3>
+          <p>4个独立按键实现菜单导航、参数调整、校时等操作，定时器消抖确保稳定</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="architecture">
+      <h2 class="section-title">系统架构</h2>
+      <div class="arch-container">
+        <div class="arch-block arch-core">
+          <h3>ESP32-S3</h3>
+          <p>主控芯片（内置WiFi/蓝牙）</p>
+          <div class="arch-desc">GPIO / I2C / UART / SPI / WiFi</div>
+        </div>
+        <div class="arch-connections">
+          <div class="arch-line"></div>
+          <div class="arch-line"></div>
+          <div class="arch-line"></div>
+          <div class="arch-line"></div>
+        </div>
+        <div class="arch-modules">
+          <div class="arch-module">
+            <span class="module-icon">&#9200;</span>
+            <span class="module-name">DS1302</span>
+            <span class="module-desc">实时时钟</span>
+          </div>
+          <div class="arch-module">
+            <span class="module-icon">&#128250;</span>
+            <span class="module-name">LCD12864</span>
+            <span class="module-desc">汉字显示</span>
+          </div>
+          <div class="arch-module">
+            <span class="module-icon">&#128264;</span>
+            <span class="module-name">JQ8900</span>
+            <span class="module-desc">MP3模块</span>
+          </div>
+          <div class="arch-module">
+            <span class="module-icon">&#127777;&#65039;</span>
+            <span class="module-name">DHT11</span>
+            <span class="module-desc">温湿度</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="software">
+      <h2 class="section-title">软件设计</h2>
+      <div class="state-machine">
+        <h3>状态机交互逻辑</h3>
+        <div class="state-grid">
+          <div class="state-item"><span class="state-num">0</span><span class="state-desc">主时间显示</span></div>
+          <div class="state-arrow">&rarr;</div>
+          <div class="state-item"><span class="state-num">1</span><span class="state-desc">设置菜单</span></div>
+          <div class="state-arrow">&rarr;</div>
+          <div class="state-item"><span class="state-num">2</span><span class="state-desc">时钟设置</span></div>
+          <div class="state-arrow">&rarr;</div>
+          <div class="state-item"><span class="state-num">3</span><span class="state-desc">时区设置</span></div>
+          <div class="state-arrow">&rarr;</div>
+          <div class="state-item"><span class="state-num">4</span><span class="state-desc">闹钟详情</span></div>
+          <div class="state-arrow">&rarr;</div>
+          <div class="state-item"><span class="state-num">5</span><span class="state-desc">闹钟列表</span></div>
+          <div class="state-arrow">&rarr;</div>
+          <div class="state-item"><span class="state-num">6</span><span class="state-desc">闹铃设置</span></div>
+          <div class="state-arrow">&rarr;</div>
+          <div class="state-item"><span class="state-num">7</span><span class="state-desc">闹铃列表</span></div>
+        </div>
+      </div>
+      <div class="algorithm">
+        <h3>多时区自动换算算法</h3>
+        <div class="algo-steps">
+          <div class="algo-step"><span class="step-num">1</span><p>将时分秒转换为总秒数，加上时区偏移</p></div>
+          <div class="algo-step"><span class="step-num">2</span><p>处理秒数超出范围的进位/借位</p></div>
+          <div class="algo-step"><span class="step-num">3</span><p>逐日调整年/月/日，修正星期</p></div>
+          <div class="algo-step"><span class="step-num">4</span><p>返回调整后的时间数组</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cost-analysis">
+      <h2 class="section-title">成本分析</h2>
+      <div class="cost-grid">
+        <div class="cost-item"><span class="cost-name">DS1302 时钟芯片</span><span class="cost-price">&yen;5</span></div>
+        <div class="cost-item"><span class="cost-name">DHT11 温湿度传感器</span><span class="cost-price">&yen;5</span></div>
+        <div class="cost-item"><span class="cost-name">LCD12864 显示屏</span><span class="cost-price">&yen;30</span></div>
+        <div class="cost-item"><span class="cost-name">AT24C512 EEPROM</span><span class="cost-price">&yen;20</span></div>
+        <div class="cost-item"><span class="cost-name">按键开关</span><span class="cost-price">&yen;20</span></div>
+        <div class="cost-item"><span class="cost-name">JQ8900 MP3模块</span><span class="cost-price">&yen;10</span></div>
+        <div class="cost-item"><span class="cost-name">ESP32-S3 开发板（内置WiFi）</span><span class="cost-price">&yen;45</span></div>
+        <div class="cost-item"><span class="cost-name">PCB板</span><span class="cost-price">&yen;15</span></div>
+        <div class="cost-item"><span class="cost-name">其他元器件</span><span class="cost-price">&yen;112</span></div>
+        <div class="cost-total"><span class="cost-name">总计</span><span class="cost-price">&yen;262</span></div>
+      </div>
+    </section>
+
+    <section class="test-results">
+      <h2 class="section-title">测试结果</h2>
+      <div class="test-table-wrapper">
+        <table class="test-table">
+          <thead><tr><th>测试项</th><th>操作</th><th>结果</th></tr></thead>
+          <tbody>
+            <tr><td>本地时间显示</td><td>上电自动NTP校时</td><td class="test-pass">&#10003; 显示北京时间，与手机时间误差 &lt;1秒</td></tr>
+            <tr><td>时区切换</td><td>主界面按上下键</td><td class="test-pass">&#10003; 依次显示4个预设时区时间，日期自动跨日</td></tr>
+            <tr><td>时间校准</td><td>进入时钟设置修改</td><td class="test-pass">&#10003; 修改后保存成功，重启不丢失</td></tr>
+            <tr><td>闹钟触发</td><td>设置闹钟时间为当前+30秒</td><td class="test-pass">&#10003; 到点播放指定曲目，持续预设时长后停止</td></tr>
+            <tr><td>闹铃音乐切换</td><td>修改音乐编号（1~4）</td><td class="test-pass">&#10003; 下次触发播放对应MP3文件</td></tr>
+            <tr><td>掉电存储</td><td>断电后重新上电</td><td class="test-pass">&#10003; 时区偏移、闹钟参数恢复为上次保存值</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="summary">
+      <h2 class="section-title">项目总结</h2>
+      <div class="summary-content">
+        <div class="summary-item">
+          <h3>功能完成率</h3>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%">100%</div>
+          </div>
+        </div>
+        <div class="summary-item">
+          <h3>技术创新</h3>
+          <ul>
+            <li>多时区自动换算算法，避免浮点运算</li>
+            <li>低成本硬件+软件补偿策略</li>
+            <li>闹钟与闹铃分离架构</li>
+            <li>完整的PCB设计与3D打印外壳</li>
+          </ul>
+        </div>
+        <div class="summary-item">
+          <h3>核心优势</h3>
+          <ul>
+            <li>计时误差低于±1秒/天</li>
+            <li>总硬件成本约262元</li>
+            <li>ESP32-S3内置WiFi，简化硬件设计</li>
+            <li>功能完成率100%</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+{% endblock %}
