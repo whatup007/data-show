@@ -398,3 +398,210 @@
   .timer-page .arch-connections { gap: 20px; }
   .timer-page .algo-steps { grid-template-columns: 1fr; }
 }
+
+/* ============ Smart Features: Snoring + Voice ============ */
+.timer-page .smart-features { margin-bottom: 48px; }
+.timer-page .smart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.timer-page .smart-panel {
+  background: var(--timer-card);
+  border-radius: 14px;
+  padding: 24px;
+  border: 1px solid var(--timer-border);
+}
+.timer-page .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.timer-page .panel-header h3 {
+  font-size: 1.1rem;
+  color: var(--timer-text);
+  margin: 0;
+}
+.timer-page .panel-btn {
+  padding: 6px 14px;
+  background: var(--timer-primary);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.timer-page .panel-btn:hover {
+  background: var(--timer-primary-dark);
+  transform: scale(1.05);
+}
+
+/* Snore indicator */
+.timer-page .snore-status {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.timer-page .snore-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.timer-page .indicator-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid var(--timer-border);
+  transition: all 0.3s ease;
+}
+.timer-page .snore-indicator.monitoring .indicator-ring {
+  border-color: var(--timer-secondary);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+  animation: pulse-green 2s ease-in-out infinite;
+}
+.timer-page .snore-indicator.snoring .indicator-ring {
+  border-color: #ef4444;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  animation: pulse-red 1s ease-in-out infinite;
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 16px rgba(16,185,129,0.3); }
+  50% { box-shadow: 0 0 28px rgba(16,185,129,0.5); }
+}
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.5); }
+  50% { box-shadow: 0 0 36px rgba(239,68,68,0.8); }
+}
+.timer-page .indicator-text {
+  font-size: 0.8rem;
+  color: var(--timer-muted);
+}
+
+/* Snore stats */
+.timer-page .snore-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.timer-page .snore-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: var(--timer-bg);
+  border-radius: 8px;
+  border: 1px solid var(--timer-border);
+}
+.timer-page .stat-label {
+  font-size: 0.7rem;
+  color: var(--timer-muted);
+  margin-bottom: 4px;
+}
+.timer-page .stat-value {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--timer-text);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Snore bar */
+.timer-page .snore-bar-wrap {
+  height: 6px;
+  background: var(--timer-bg);
+  border-radius: 3px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.timer-page .snore-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--timer-secondary), #ef4444);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Log area */
+.timer-page .snore-log, .timer-page .voice-log {
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--timer-bg);
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid var(--timer-border);
+}
+.timer-page .snore-log::-webkit-scrollbar,
+.timer-page .voice-log::-webkit-scrollbar { width: 3px; }
+.timer-page .snore-log::-webkit-scrollbar-thumb,
+.timer-page .voice-log::-webkit-scrollbar-thumb { background: var(--timer-border); border-radius: 2px; }
+.timer-page .log-line {
+  font-size: 0.72rem;
+  padding: 3px 0;
+  color: var(--timer-muted);
+  border-bottom: 1px solid rgba(51,65,85,0.3);
+}
+.timer-page .log-time { color: var(--timer-lcd-dim); margin-right: 4px; }
+.timer-page .log-tag { color: var(--timer-secondary); font-weight: 500; }
+.timer-page .log-detail { color: var(--timer-muted); font-size: 0.68rem; }
+.timer-page .log-success .log-tag { color: #ef4444; }
+.timer-page .log-info .log-tag { color: var(--timer-primary); }
+.timer-page .log-user .log-tag { color: var(--timer-accent); }
+
+/* Voice control */
+.timer-page .voice-input-area {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.timer-page .voice-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--timer-bg);
+  border: 1px solid var(--timer-border);
+  border-radius: 8px;
+  color: var(--timer-text);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.timer-page .voice-input:focus { border-color: var(--timer-primary); }
+.timer-page .voice-input:disabled { opacity: 0.4; }
+.timer-page .voice-send { flex-shrink: 0; }
+
+.timer-page .voice-commands { margin-bottom: 12px; }
+.timer-page .voice-commands h4 {
+  font-size: 0.8rem;
+  color: var(--timer-muted);
+  margin-bottom: 8px;
+  text-align: center;
+}
+.timer-page .cmd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.timer-page .cmd-item {
+  padding: 6px 8px;
+  background: var(--timer-bg);
+  border: 1px solid var(--timer-border);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  text-align: center;
+  color: var(--timer-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.timer-page .cmd-item:hover {
+  border-color: var(--timer-primary);
+  color: var(--timer-text);
+  background: rgba(37,99,235,0.08);
+}
+
+@media (max-width: 900px) {
+  .timer-page .smart-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .timer-page .cmd-grid { grid-template-columns: repeat(2, 1fr); }
+}

@@ -239,10 +239,85 @@
       </div>
     </section>
 
+    <section class="smart-features">
+      <h2 class="section-title">智能扩展功能</h2>
+
+      <div class="smart-grid">
+        <!-- 鼾声监测面板 -->
+        <div class="smart-panel snore-panel">
+          <div class="panel-header">
+            <h3>&#128164; 鼾声监测</h3>
+            <button class="panel-btn" id="snoreToggle">开始监测</button>
+          </div>
+          <div class="snore-status">
+            <div class="snore-indicator" id="snoreIndicator">
+              <div class="indicator-ring"></div>
+              <span class="indicator-text" id="snoreStatus">待监测</span>
+            </div>
+          </div>
+          <div class="snore-stats">
+            <div class="snore-stat">
+              <span class="stat-label">当前状态</span>
+              <span class="stat-value" id="snoreState">--</span>
+            </div>
+            <div class="snore-stat">
+              <span class="stat-label">鼾声评分</span>
+              <span class="stat-value" id="snoreScore">0.00</span>
+            </div>
+            <div class="snore-stat">
+              <span class="stat-label">信号强度</span>
+              <span class="stat-value" id="snoreRms">--</span>
+            </div>
+            <div class="snore-stat">
+              <span class="stat-label">监测帧数</span>
+              <span class="stat-value" id="snoreFrames">0</span>
+            </div>
+            <div class="snore-stat">
+              <span class="stat-label">鼾声帧数</span>
+              <span class="stat-value" id="snoreDetected">0</span>
+            </div>
+          </div>
+          <div class="snore-bar-wrap">
+            <div class="snore-bar" id="snoreBar" style="width: 0%"></div>
+          </div>
+          <div class="snore-log" id="snoreLog"></div>
+        </div>
+
+        <!-- 语音控制面板 -->
+        <div class="smart-panel voice-panel">
+          <div class="panel-header">
+            <h3>&#127908; 语音控制</h3>
+            <button class="panel-btn" id="voiceToggle">开始监听</button>
+          </div>
+          <div class="voice-input-area">
+            <input type="text" id="voiceInput" placeholder="输入语音指令或说话..." class="voice-input" disabled>
+            <button class="panel-btn voice-send" id="voiceSend" disabled>发送</button>
+          </div>
+          <div class="voice-commands">
+            <h4>可用指令</h4>
+            <div class="cmd-grid">
+              <div class="cmd-item" data-cmd="打开闹钟">打开闹钟</div>
+              <div class="cmd-item" data-cmd="关闭闹钟">关闭闹钟</div>
+              <div class="cmd-item" data-cmd="下一个时区">下一个时区</div>
+              <div class="cmd-item" data-cmd="上一个时区">上一个时区</div>
+              <div class="cmd-item" data-cmd="切换到北京时间">北京时间</div>
+              <div class="cmd-item" data-cmd="切换到纽约时间">纽约时间</div>
+              <div class="cmd-item" data-cmd="切换到伦敦时间">伦敦时间</div>
+              <div class="cmd-item" data-cmd="切换到东京时间">东京时间</div>
+              <div class="cmd-item" data-cmd="调高音量">调高音量</div>
+              <div class="cmd-item" data-cmd="调低音量">调低音量</div>
+            </div>
+          </div>
+          <div class="voice-log" id="voiceLog"></div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
 <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
 {% endblock %}

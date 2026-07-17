@@ -8,7 +8,7 @@ import time
 import wave
 import numpy as np
 from scipy import signal
-from app.utils.vad import detect_speech, is_noise_transcript, compute_rms
+from app.utils.vad import detect_speech, detect_snoring, is_noise_transcript, compute_rms
 
 ai_bp = Blueprint('ai', __name__)
 
@@ -195,6 +195,103 @@ def handle_audio_query(audio_b64):
             return
 
         emit('text_response', {'response': response_text})
+    except Exception as e:
+        print(f"豆包音频调用失败: {e}")
+        emit('text_response', {'response': '抱歉，我刚才没听清楚，请再说一遍。'})
+
+
+# ============ 鼾声监控 ============
+snore_stats = {"total_frames": 0, "snore_frames": 0, "is_snoring": False}
+
+
+@socketio.on('snore_audio')
+def handle_snore_audio(data):
+    try:
+        if isinstance(data, str):
+            pcm_data = base64.b64decode(data)
+        else:
+            pcm_data = data
+
+        pcm_int16 = np.frombuffer(pcm_data, dtype=np.int16)
+
+        is_snoring, snore_score, detail = detect_snoring(pcm_int16)
+
+        snore_stats["total_frames"] += 1
+        if is_snoring:
+            snore_stats["snore_frames"] += 1
+        snore_stats["is_snoring"] = is_snoring
+
+        rms = compute_rms(pcm_int16)
+
+        emit('snore_result', {
+            'is_snoring': is_snoring,
+            'score': round(snore_score, 2),
+            'rms': round(rms, 5),
+            'detail': detail,
+            'total': snore_stats["total_frames"],
+            'snore_count': snore_stats["snore_frames"],
+        })
+    except Exception as e:
+        print(f"鼾声检测错误: {e}")
+        emit('snore_result', {'is_snoring': False, 'score': 0, 'error': str(e)})
+
+
+# ============ 语音控制 ============
+VOICE_COMMANDS = {
+    "打开闹钟": {"action": "alarm_on"},
+    "关闭闹钟": {"action": "alarm_off"},
+    "下一个时区": {"action": "next_timezone"},
+    "上一个时区": {"action": "prev_timezone"},
+    "切换到北京时间": {"action": "set_timezone", "tz": "Asia/Shanghai"},
+    "切换到纽约时间": {"action": "set_timezone", "tz": "America/New_York"},
+    "切换到伦敦时间": {"action": "set_timezone", "tz": "Europe/London"},
+    "切换到东京时间": {"action": "set_timezone", "tz": "Asia/Tokyo"},
+    "显示时间": {"action": "show_time"},
+    "调高音量": {"action": "volume_up"},
+    "调低音量": {"action": "volume_down"},
+    "关闭音量": {"action": "volume_mute"},
+}
+
+
+@socketio.on('voice_command')
+def handle_voice_command(json_data):
+    query = json_data.get('query', '')
+    print(f"收到语音控制: {query}")
+
+    query_lower = query.lower().strip()
+
+    for cmd_text, cmd in VOICE_COMMANDS.items():
+        if cmd_text in query_lower:
+            emit('voice_cmd_response', {
+                'recognized': True,
+                'command': cmd,
+                'text': query,
+                'reply': f"已执行: {cmd_text}",
+            })
+            return
+
+    try:
+        model_name = os.getenv("AI_MODEL", "doubao-seed-2-0-lite-260428")
+        completion = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": "你是一个智能家居语音控制助手。用户会说出控制指令，请判断并返回JSON格式的控制命令。可用命令: alarm_on, alarm_off, next_timezone, prev_timezone, set_timezone(tz), volume_up, volume_down, volume_mute, show_time。如果用户说的是控制命令，返回 {\"action\": \"xxx\"}。如果是其他问题，返回普通回答。"},
+                {"role": "user", "content": query}
+            ]
+        )
+        reply = completion.choices[0].message.content
+        emit('voice_cmd_response', {
+            'recognized': False,
+            'text': query,
+            'reply': reply,
+        })
+    except Exception as e:
+        print(f"语音控制AI调用失败: {e}")
+        emit('voice_cmd_response', {
+            'recognized': False,
+            'text': query,
+            'reply': "抱歉，无法识别您的指令。",
+        })
     except Exception as e:
         print(f"豆包音频调用失败: {e}")
         emit('text_response', {'response': '抱歉，我刚才没听清楚，请再说一遍。'})
